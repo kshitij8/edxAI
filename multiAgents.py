@@ -242,7 +242,47 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
   """
     Your expectimax agent (question 4)
   """
-
+  def value(self,gameState,depth,agent):
+	#print "depth",depth
+	if depth==0 or gameState.isWin() or gameState.isLose():
+		return (self.evaluationFunction(gameState),None)
+	if agent>=gameState.getNumAgents():
+		agent=agent%gameState.getNumAgents()
+		depth-=1
+  	if agent==0:
+  		return self.maxi(gameState,depth,agent)
+  	else:
+  		return self.expecti(gameState,depth,agent)
+  def maxi(self,gameState,depth,agent):
+  	v=float('-inf')
+  	act=None
+  	acts=gameState.getLegalActions(agent)
+  	for i in acts:
+  		if i=='Stop':
+  			continue
+  		tem=self.value(gameState.generateSuccessor(agent,i),depth,agent+1)[0]
+  		if tem>v:
+  			v=tem
+  			act=i
+  	#print v
+  	return (v,act)
+  def expecti(self,gameState,depth,agent):
+  	v=0
+  	act=None
+  	acts=gameState.getLegalActions(agent)
+  	act=random.choice(acts)
+  	#v=self.value(gameState.generateSuccessor(agent,act),depth,agent+1)[0]
+  	#return (self.evaluationFunction(gameState),random.choice(acts))
+  	for i in acts:
+  		if i=='Stop':
+  			continue
+  		tem=self.value(gameState.generateSuccessor(agent,i),depth,agent+1)[0]
+  		v=v+tem/5.0
+  		#if tem<v:
+  			#v=tem
+  			#act=i
+  	#print v
+  	return (v,act)
   def getAction(self, gameState):
     """
       Returns the expectimax action using self.depth and self.evaluationFunction
@@ -251,6 +291,9 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
       legal moves.
     """
     "*** YOUR CODE HERE ***"
+    ans=self.value(gameState,self.depth,0)
+    #print ans[0]
+    return ans[1]
     util.raiseNotDefined()
 
 def betterEvaluationFunction(currentGameState):
@@ -261,6 +304,27 @@ def betterEvaluationFunction(currentGameState):
     DESCRIPTION: <write something here so we know what you did>
   """
   "*** YOUR CODE HERE ***"
+  Pos = currentGameState.getPacmanPosition()
+  Food = currentGameState.getFood()
+  GhostStates = currentGameState.getGhostStates()
+  ScaredTimes = [ghostState.scaredTimer for ghostState in GhostStates]
+  #print ScaredTimes
+  food=[]
+  for i in Food.asList():
+	food.append(manhattanDistance(Pos,i))
+  score=0
+  if len(food)>0 :
+  	score=1/sum(food)+5/min(food)+currentGameState.getScore()
+  #ghost=0
+  for i in GhostStates:
+  	#ghost+=manhattanDistance(Pos,i.getPosition())
+  	if i.scaredTimer==0 and manhattanDistance(Pos,i.getPosition())<2:
+  		return 0
+  #if ghost<5:
+  	#return 0
+  if score>0:
+  	return score
+  return currentGameState.getScore()
   util.raiseNotDefined()
 
 # Abbreviation
