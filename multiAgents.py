@@ -86,7 +86,7 @@ class ReflexAgent(Agent):
     		return -10
     if score>0:
     	return score
-    return 0.1
+    return successorGameState.getScore()#0.1#float("inf")
 
 def scoreEvaluationFunction(currentGameState):
   """
@@ -122,7 +122,32 @@ class MinimaxAgent(MultiAgentSearchAgent):
   """
     Your minimax agent (question 2)
   """
-
+  def value(self,gameState,depth,agent):
+  	if depth==0:
+  		return self.evaluationFunction(gameState)
+  	if agent>=gameState.getNumAgents():
+  		agent=agent%gameState.getNumAgents()
+  		depth-=1
+  	if agent==0:
+  		return maxi(gameState,depth,agent)
+  	else:
+  		return mini(gameState,depth,agent)
+  def maxi(self,gameState,depth,agent):
+  	v=float("-inf")
+  	acts=gameState.getLegalActions(agent)
+  	for i in acts:
+  		tem=value(gameState.generateSuccessor(agent,i),depth,agent+1)
+  		if tem>v:
+  			v=tem
+  	return v
+  def mini(self,gameState,depth,agent):
+  	v=float("inf")
+  	acts=gameState.getLegalActions(agent)
+  	for i in acts:
+  		tem=value(gameState.generateSuccessor(agent,i),depth,agent+1)
+  		if tem<v:
+  			v=tem
+  	return v
   def getAction(self, gameState):
     """
       Returns the minimax action from the current gameState using self.depth
@@ -144,6 +169,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
         Returns the total number of agents in the game
     """
     "*** YOUR CODE HERE ***"
+    return value(gameState,self.depth,0)
     util.raiseNotDefined()
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
