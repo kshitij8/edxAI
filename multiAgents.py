@@ -173,7 +173,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
     """
     "*** YOUR CODE HERE ***"
     ans=self.value(gameState,self.depth,0)
-    #print ans
+    #print ans[0],"depth",self.depth
     return ans[1]
     util.raiseNotDefined()
 
@@ -181,12 +181,61 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
   """
     Your minimax agent with alpha-beta pruning (question 3)
   """
-
+  def value(self,gameState,depth,agent,alpha,beta):
+	#print "depth",depth
+	if depth==0 or gameState.isWin() or gameState.isLose():
+		return (self.evaluationFunction(gameState),None,alpha,beta)
+	if agent>=gameState.getNumAgents():
+		agent=agent%gameState.getNumAgents()
+		depth-=1
+  	if agent==0:
+  		return self.maxi(gameState,depth,agent,alpha,beta)
+  	else:
+  		return self.mini(gameState,depth,agent,alpha,beta)
+  def maxi(self,gameState,depth,agent,alpha,beta):
+  	v=float('-inf')
+  	act=None
+  	acts=gameState.getLegalActions(agent)
+  	for i in acts:
+  		if v>beta:
+  			break
+  		if i=='Stop':
+  			continue
+  		tem=self.value(gameState.generateSuccessor(agent,i),depth,agent+1,alpha,beta)
+  		alpha=tem[2]
+  		beta=tem[3]
+  		tem=tem[0]
+  		if tem>v:
+  			v=tem
+  			act=i
+  	#print v
+  	return (v,act,alpha,v)
+  def mini(self,gameState,depth,agent,alpha,beta):
+  	v=float('inf')
+  	act=None
+  	acts=gameState.getLegalActions(agent)
+  	for i in acts:
+  		if v<alpha:
+  			break
+  		if i=='Stop':
+  			continue
+  		tem=self.value(gameState.generateSuccessor(agent,i),depth,agent+1,alpha,beta)
+  		alpha=tem[2]
+  		beta=tem[3]
+  		tem=tem[0]
+  		if tem<v:
+  			v=tem
+  			act=i
+  	#print v
+  	return (v,act,v,beta)
   def getAction(self, gameState):
     """
       Returns the minimax action using self.depth and self.evaluationFunction
     """
     "*** YOUR CODE HERE ***"
+    ans=self.value(gameState,self.depth,0,float("-inf"),float("+inf"))
+    #print ans[0]
+    return ans[1]
     util.raiseNotDefined()
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
